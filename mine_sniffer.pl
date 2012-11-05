@@ -1,12 +1,11 @@
-/**
-%Uncomment if nth0 is not-defined by the interpreter.
-%This is not built-in to XSB
-nth0(0,[X|_],X).
-nth0(Idx,[_|List],X) :-
+%Use SWI-Prolog. Doesnt work with XSB yet.
+
+nth0_t(0,[X|_],X).
+nth0_t(Idx,[_|List],X) :-
     Idx > 0,
     Idx1 is Idx-1,
-    nth1(Idx1,List,X).
-*/
+    nth0_t(Idx1,List,X).
+
 
 %Check if [X, Y] is adjacent to [I, J] and has a Mine
 adjMines(Grid, [I,J], [X,Y], M, N) :-
@@ -24,7 +23,7 @@ hasMine(Grid, I, J, M, N) :-
 	I >= 0, I < M,
 	J >= 0, J < N,
 	Idx is I * N + J,
-	nth0(Idx, Grid, Cell),
+	nth0_t(Idx, Grid, Cell),
 	isMine(Cell).
 
 %True if it is a mine
@@ -33,7 +32,7 @@ isMine(mine).
 %True if the cell is not a number - either a mine or no_mine
 nonnum_cell(mine).
 nonnum_cell(no_mine).
-%nonnum_cell(nh). %Equivalent to no_mine. Doesn't serve any purpose
+%nonnum_cell(nh). %Equivalent to no_mine. Doesnt serve any purpose
 
 solved(_, [], _, _, _).
 
@@ -47,7 +46,7 @@ solved(Grid, [Cell | Rest], Idx, M, N) :-
 	J is Idx mod N,
 	Idx1 is Idx + 1,
 	findall([X, Y], adjMines(Grid, [I, J], [X, Y], M, N), AllMines),
-	length(AllMines, Num),
+	length_t(AllMines, Num),
 	Cell is Num,
 	solved(Grid, Rest, Idx1, M, N).
 
@@ -72,9 +71,9 @@ solve(Grid, M, N) :-
 %solve([[1, 1, Y, 0], [X, 1, 0, 0], [1, 1, Z, 0]]).
 %Note: Different unknowns should have different Variable names
 solve(Grid2d) :-
-	length(Grid2d, M),
-	nth0(0, Grid2d, Row),
-	length(Row, N),
+	length_t(Grid2d, M),
+	nth0_t(0, Grid2d, Row),
+	length_t(Row, N),
 	flatten(Grid2d, FlatGrid),
 	solve(FlatGrid, M, N).
 
@@ -95,6 +94,11 @@ flatten([Head|Tail], Flatlist) :-
 	unwrap(Head, Head1),
 	flatten(Tail, Rest),
 	append(Head1, Rest, Flatlist).
+
+length_t([], 0).
+length_t([_ | Rest], Len) :-
+   length_t(Rest, Len1),
+   Len is Len1 + 1, !.
 
 /*
 * ***********************
